@@ -36,7 +36,12 @@ class Model:
             pass
         
         elif caption == '=':
-            self.value = str(self._evaluate())
+            value = self._evaluate()
+            
+            if '.0' in str(value):
+                value = int(value)
+                
+            self.value = str(value)
         
         elif caption == '.':
             if not caption in self.value:
