@@ -6,6 +6,8 @@ Created on Jul 31, 2022
 
 import tkinter as tk
 from tkinter import ttk
+ 
+ 
 
 
 
@@ -40,14 +42,37 @@ class View(tk.Tk):
         
         self.title("PyCalc1.0")
         
+        self.config(bg='black')
+        
+        self._configure_button_styles()
+        
         self._make_main_frame()
-        self._make_entry()
+        self._make_label()
         self._make_buttons()
         #we call this after all because the it's a dynamic window so fits is't important to put the
         #widgets inside and then with the size center the window
         self._center_window()
-    
-
+        
+    def _configure_button_styles(self):
+        style = ttk.Style()
+        
+        style.theme_use('alt')
+        
+        #style for number buttons
+        style.configure(
+            'N.TButton', foreground='white', background='gray'
+            )
+        
+        #style for operator buttons
+        style.configure(
+            'O.TButton', foreground='white', background='orange'
+            )
+        
+        #style for miscellaneos buttons
+        style.configure(
+            'M.TButtons', background='white'
+            )
+        
     def main(self):
         #this is a infinite loop that help us to show the GUI because finish when we close the form
         self.mainloop()
@@ -57,34 +82,58 @@ class View(tk.Tk):
         self.main_frm.pack(padx=self.PAD, pady=self.PAD)
         
     #in python we don't have private methods so when we put one underscore means that this method is only use it inside of the class
-    def _make_entry(self):
-        ent = ttk.Entry(self.main_frm, justify='right', textvariable = self.value_var,
-        state='disabled')
-        ent.pack(fill='x')
+    def _make_label(self):
+        #we change the ttk for tk label becuase it's one label so don't have much sense to create a style for one label
+        #if we have more than two labels have much sense so in this case it's more easy
+        lbl = tk.Label(self.main_frm, anchor='e', textvariable=self.value_var, bg='black', fg='white', font=('Arial', 30))
+        lbl.pack(fill='x')
     
     def _make_buttons(self):
         outer_frm = ttk.Frame(self.main_frm)
         outer_frm.pack()
         
-        frm = ttk.Frame(outer_frm)
-        frm.pack()
+        is_firt_row = True
         
         button_in_row = 0
         
         for caption in self.button_captions:
-            if button_in_row == self.MAX_BUTTONS_PER_ROW:
+            if is_firt_row == True or button_in_row == self.MAX_BUTTONS_PER_ROW:
+                is_firt_row = False
+                
                 frm = ttk.Frame(outer_frm)
-                frm.pack()
+                frm.pack(fil='x')
                 
                 button_in_row = 0
                 
+            if isinstance(caption, int):
+                style_prefix = 'N'
+            elif self._is_operator(caption):
+                style_prefix = 'O'
+            else:
+                style_prefix = 'M'
+                
+            style_name = f'{style_prefix}.TButton'
+                
             btn = ttk.Button(
                 frm,text=caption, 
-                command=(lambda button=caption: self.controller.on_button_click(button))
+                command=(lambda button=caption: self.controller.on_button_click(button)),
+                style=style_name
                 )
-            btn.pack(side='left')
+            
+            if caption == 0:
+                fill = 'x'
+                expand = 1
+            else:
+                fill = 'none'
+                expand = 0
+            
+            btn.pack(fill=fill, expand=expand, side='left')
             
             button_in_row += 1
+            
+    
+    def _is_operator(self, button_caption):
+        return button_caption in ['/', '*', '-', '+' , '=']
             
             
     def _center_window(self):
